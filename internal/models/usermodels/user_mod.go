@@ -1,8 +1,11 @@
 package usermodels
 
 import (
+	"errors"
+
 	"github.com/xmopen/authsvr/internal/config"
 	"github.com/xmopen/commonlib/pkg/database/xmuser"
+	"gorm.io/gorm"
 )
 
 const XMUserTableName = "t_xm_user"
@@ -15,6 +18,13 @@ func SaveUser(user *xmuser.XMUser) error {
 // XMUserWithAccount 根据Account获取XMUser.
 func XMUserWithAccount(account string) (*xmuser.XMUser, error) {
 	xmUser := xmuser.New()
-	return xmUser, config.AuthDataBase().Table(XMUserTableName).Where("user_account = ?", account).
+	err := config.AuthDataBase().Table(XMUserTableName).Where("user_account = ?", account).
 		First(xmUser).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return xmUser, nil
 }
