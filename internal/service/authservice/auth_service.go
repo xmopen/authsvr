@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xmopen/golib/pkg/xlogging"
+
 	"github.com/xmopen/golib/pkg/utils"
 
 	"github.com/redis/go-redis/v9"
@@ -23,7 +25,8 @@ const (
 	XMUserAccountToTokenMapping = "xm_user_account_token_mapping_%s"
 
 	// defaultXMUserAuthTokenExpire  默认Token过期时间
-	defaultXMUserAuthTokenExpire = 7 * 24 * time.Hour
+	defaultXMUserAuthTokenExpire      = 7 * 24 * time.Hour
+	defaultXMUserAuthRefreshExpireSec = 10 * 60
 )
 
 var (
@@ -76,7 +79,6 @@ func (a *AuthService) XMUserWithAccount(account string) (*xmuser.XMUser, error) 
 
 // CreateXMUserToken 创建XMUser Token.
 func (a *AuthService) CreateXMUserToken(xmUser *xmuser.XMUser) (string, error) {
-
 	xmToken, err := a.xredis.Get(context.TODO(), fmt.Sprintf(XMUserAccountToTokenMapping, xmUser.UserAccount)).Result()
 	if err != nil && err != redis.Nil {
 		return "", err
@@ -109,6 +111,28 @@ func (a *AuthService) CreateXMUserToken(xmUser *xmuser.XMUser) (string, error) {
 		}
 		return token, nil
 	}
+}
+
+// RefreshXMToken refreshing a token when it is about to expire
+func (a *AuthService) RefreshXMToken(xlog *xlogging.Entry, token string, xmUser *xmuser.XMUser) string {
+	duration, err := a.xredis.TTL(context.TODO(), fmt.Sprintf(XMUserWithTokenKey, token)).Result()
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			xlog.Errorf("refresh xm token err:[%+v] token:[%+v]", err, token)
+		}
+		return ""
+	}
+	// 如果Token10分钟内到期则刷新Token并返回.
+	xlog.Infof("refresh token ttl:[%+v] token:[%+v] account:[%+v]", duration, token, xmUser.UserAccount)
+	if duration.Seconds() <= defaultXMUserAuthRefreshExpireSec {
+		newToken, err := a.CreateXMUserToken(xmUser)
+		if err != nil {
+			xlog.Errorf("create xmuser token err:[%+v]", err)
+			return ""
+		}
+		return newToken
+	}
+	return ""
 }
 
 func (a *AuthService) getXMUserFromRedisWithKey(key string) (*xmuser.XMUser, error) {

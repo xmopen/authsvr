@@ -14,4 +14,7 @@ func Init(r *gin.Engine) {
 	group := r.Group("/openxm/api/v1/auth")
 	group.POST("/login", authAPI.UserLogin)
 	group.POST("/register", authAPI.UserRegisterAndLogin)
+
+	refreshAPI := userauth.NewRefreshAuthAPI()
+	group.GET("/check/session", refreshAPI.CheckXMUserWithToken)
 }
