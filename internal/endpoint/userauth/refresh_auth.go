@@ -56,10 +56,10 @@ func (r *RefreshAuthAPI) CheckXMUserWithToken(c *gin.Context) {
 		c.JSON(http.StatusOK, errcode.ErrorParam)
 		return
 	}
-	newToken := authservice.Service().RefreshXMToken(xlog, xmToken, xmUser)
-	if newToken != "" {
-		xmToken = newToken
-	}
+	//newToken := authservice.Service().RefreshXMToken(xlog, xmToken, xmUser)
+	//if newToken != "" {
+	//	xmToken = newToken
+	//}
 	c.JSON(http.StatusOK, errcode.Success(&userRefreshResponse{
 		UserInfo: xmUser,
 		XMToken:  xmToken,

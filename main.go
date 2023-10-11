@@ -9,6 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/xmopen/authsvr/internal/config"
+	"github.com/xmopen/golib/pkg/xlogging"
+
 	"github.com/gin-gonic/gin"
 	"github.com/xmopen/authsvr/internal/endpoint"
 	"github.com/xmopen/authsvr/internal/server"
@@ -22,6 +25,7 @@ type app struct {
 	rpcsvr *rpcserver.Server
 	cancel context.CancelFunc
 	close  chan error
+	xlog   *xlogging.Entry
 }
 
 // init 初始化svr.
@@ -43,7 +47,10 @@ func (a *app) init(ctx context.Context) {
 // run 运行svr.
 func (a *app) run(ctx context.Context) {
 	xgoroutine.SafeGoroutine(func() {
-		if err := a.rpcsvr.Server("tcp", ":18849"); err != nil {
+		network := config.Config().GetString("server.authsvr.rpc.network")
+		addr := config.Config().GetString("server.authsvr.rpc.addr")
+		a.xlog.Infof("rpc server running addr:[%+v] network:[%+v]", addr, network)
+		if err := a.rpcsvr.Server(network, addr); err != nil {
 			fmt.Printf("rpc server err:[%+v]\n", err)
 		}
 	})
@@ -62,18 +69,20 @@ func (a *app) quit() {
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	r := gin.New()
+	addr := config.Config().GetString("server.authsvr.http.addr")
 	app := &app{
 		engine: r,
 		apiSvr: &http.Server{
-			Addr:              ":8849",
+			Addr:              addr,
 			Handler:           r,
 			ReadHeaderTimeout: 5 * time.Second,
 			WriteTimeout:      5 * time.Second,
 		},
 		cancel: cancel,
-		close:  make(chan error, 1), // 容量为1不阻塞.
+		close:  make(chan error, 1),
+		xlog:   xlogging.Tag("authsvr.main"),
 	}
-
+	app.xlog.Infof("http server running addr:[%+v]", addr)
 	app.init(ctx)
 	app.quit()
 }

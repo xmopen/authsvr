@@ -25,7 +25,7 @@ const (
 	XMUserAccountToTokenMapping = "xm_user_account_token_mapping_%s"
 
 	// defaultXMUserAuthTokenExpire  默认Token过期时间
-	defaultXMUserAuthTokenExpire      = 7 * 24 * time.Hour
+	defaultXMUserAuthTokenExpire      = 1 * 24 * time.Hour
 	defaultXMUserAuthRefreshExpireSec = 10 * 60
 )
 
@@ -75,6 +75,17 @@ func (a *AuthService) XMUserWithAccount(account string) (*xmuser.XMUser, error) 
 		return nil, fmt.Errorf("account is empty")
 	}
 	return a.getXMUserFromRedisWithKey(fmt.Sprintf(XMUserWithAccountKey, account))
+}
+
+// CreateXMUserToRedis create xmuser to redis
+func (a *AuthService) CreateXMUserToRedis(xmUser *xmuser.XMUser) error {
+	data, err := json.Marshal(xmUser)
+	if err != nil {
+		return err
+	}
+	a.xredis.Set(context.TODO(), fmt.Sprintf(XMUserWithAccountKey, xmUser.UserAccount), string(data),
+		defaultXMUserAuthTokenExpire)
+	return nil
 }
 
 // CreateXMUserToken 创建XMUser Token.
