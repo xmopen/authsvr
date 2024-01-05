@@ -10,7 +10,7 @@ import (
 )
 
 func TestAuthSvr(t *testing.T) {
-	c, err := client.NewClient("tcp", ":18849", nil)
+	c, err := client.NewClient("tcpprotocol", ":18849", nil)
 	if err != nil {
 		panic(err)
 	}

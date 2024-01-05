@@ -49,7 +49,7 @@ func (a *AuthSvr) GetUserInfoByAccount(ctx context.Context, request *authserver.
 		}
 		xgoroutine.SafeGoroutine(func() {
 			if err = authservice.Service().CreateXMUserToRedis(xmUser); err != nil {
-				xlogging.Tag("authsvr.gorpc.server.loc").Errorf("create xmuser to redis err:[%+v] user:[%+v]",
+				xlogging.Tag("authsvr.gorpc.server.loc").Errorf("creational xmuser to redis err:[%+v] user:[%+v]",
 					err, xmUser)
 			}
 		})

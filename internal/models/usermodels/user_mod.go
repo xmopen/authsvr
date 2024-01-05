@@ -10,7 +10,7 @@ import (
 
 const XMUserTableName = "t_xm_user"
 
-// SaveUser create user.
+// SaveUser creational user.
 func SaveUser(user *xmuser.XMUser) error {
 	return config.AuthDataBase().Table(XMUserTableName).Create(user).Error
 }

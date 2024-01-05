@@ -77,7 +77,7 @@ func (a *AuthService) XMUserWithAccount(account string) (*xmuser.XMUser, error) 
 	return a.getXMUserFromRedisWithKey(fmt.Sprintf(XMUserWithAccountKey, account))
 }
 
-// CreateXMUserToRedis create xmuser to redis
+// CreateXMUserToRedis creational xmuser to redis
 func (a *AuthService) CreateXMUserToRedis(xmUser *xmuser.XMUser) error {
 	data, err := json.Marshal(xmUser)
 	if err != nil {
@@ -138,7 +138,7 @@ func (a *AuthService) RefreshXMToken(xlog *xlogging.Entry, token string, xmUser 
 	if duration.Seconds() <= defaultXMUserAuthRefreshExpireSec {
 		newToken, err := a.CreateXMUserToken(xmUser)
 		if err != nil {
-			xlog.Errorf("create xmuser token err:[%+v]", err)
+			xlog.Errorf("creational xmuser token err:[%+v]", err)
 			return ""
 		}
 		return newToken
