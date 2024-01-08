@@ -12,8 +12,8 @@ COPY . .
 # 拷贝配置文件
 RUN mkdir /data/config
 
-# 4、打包go文件.
-RUN go build -o ./svrmain ./*.go
+# 4、拷贝svrmain
+COPY ./svrmain .
 
 # 5、暴露端口
 # http 端口
