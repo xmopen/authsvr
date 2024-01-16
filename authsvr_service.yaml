@@ -1,0 +1,19 @@
+apiVersion: v1                    # 定义版本号
+kind: Service                     # 声明 Kubernetes 对象类型为 Service，其定义了一种访问一组 Pods 的方法，Service 为一组执行相同的功能的 Pods 提供了一个统一的访问接口.
+metadata:
+  name: authsvr                   # 声明 当前 Service 的名称为 authsvr
+  labels:
+    app: authsvrService           # 给当前 Service 对象添加额外属性
+spec:                             # 当前 Service 对象的规约，也就是当前对象在 Kubernetes 中所期望的状态
+  type: NodePort                  # 定义当前 Service 类型为 NodePort
+  selector:
+    app: authsvr                  # 选择 label 中 key 为 app 且值为 authsvr 的 Pods 作为当前 Service 的访问下游.
+  ports:                          # 定义访问方式
+    - port: 30002                 # 当前Service开放的端口，后续可以通过 serviceip:port 访问
+      targetPort: 8849            # 目标容器内的端口，也就是应用服务开放的端口，这里 Service 将端口 30002 上的流量直接全部转发到对应的 targetPort 上.
+      protocol: TCP               # 当前转发协议为 TCP 协议
+      name: authsvrhttpport       # name
+    - port: 30003                 # 当前 Service 开放的另一个端口
+      targetPort: 18849           # 目标容器的端口
+      protocol: TCP               # 转发协议
+      name: authsvrrpcport        # name

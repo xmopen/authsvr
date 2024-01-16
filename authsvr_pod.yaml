@@ -1,0 +1,38 @@
+apiVersion: apps/v1                             # Kubernetes api-service 版本号
+kind: Deployment                                # Kubernetes 对象类型： 定义了一组 Pods 的声明，它定义了 Pods 的期望状态以及如何管理这些 Pods.
+metadata:                                       # Deployment 元信息.
+  name: authsvr                                 # Deployment 名称信息，用于通过 kubectl get deployment name(blogsvr) 来获取相关信息.
+  labels:                                       # Deployment 标签，类型为 KV 类型，这些键值对为资源(Pod、Deployment)提供了附加的标识信息，用于资源的选择、组织和管理。
+    app: authsvr                                # 给当前 Deployment 对象添加标签 Key 为 app，value 为 blogsvr 的附属信息,其常常配合 .spec.selector.matchLabels 来一起使用，后者会匹配前者，当匹配上，后者的对象则会管理前者所定义的对象.
+spec:                                           # Deployment Spec 规约：Deployment 对象所期望的状态的配置信息。其中 Kubernetes Controller Manager 将会通过控制回路不断地监听 Deployment 对象状态，使其永远趋近于 Spec 所描述的状态.
+  replicas: 1                                   # Deployment 控制器希望拥有的 Pod 副本的数量，如果不填默认为 1.
+  selector:                                     # 定义如何选择一组资源，被当前 Yaml 文件所定义的对象管理,在 Deployment、ReplicaSet 中，该字段选择那些 Pod 应该会被当前对象管理，在 Service 中，用于决定那些 Pod 将接受通过该 Service 发送的网络流量.
+    matchLabels:                                # 通过匹配 Labels 来选择那些对象被当前对象管理.
+      app: authsvr                              # 管理存在标签 Key 为 app, value 为 blogsvr 所关联的对象.
+  template:                                     # .spec.template 在 Deployment 对象中，该字段表明 Deployment 控制器管理的 Pod 的模版.
+    metadata:                                   # 这一组 Pods 的元信息.
+      labels:                                   # 这一组 Pods 所包含的标签信息，后续 Deployment、Service 都将会通过该标签来选择相关的 Pod 进行管理.
+        app: authsvr
+    spec:                                       # Pod 规约：定义 Pod 所期望的预期状态，Deployment 将配合 Controller Manager 和 kube-api-service 一起配合来使当前 Pod 一直朝着预期的状态运行.
+      containers:                               # 容器配置
+        - name: authsvr                         # 名称，但是实际上 Kubelet 在创建容器时会给容器加上随机的 ID，但是前缀为 name 所定义的值.
+          image: openxm/authsvr:latest          # 构建容器所依赖的镜像，如果本地镜像没有，则会从 Docker Hub 中获取，如果不想从 Docker Hub 中获取，那么就需要配置仓库对应的镜像.
+          imagePullPolicy: IfNotPresent         # 镜像拉取原则：如果镜像不存在则才会进行拉取，如果镜像存在则不进行拉取.
+          ports:                                # 定义容器运行端口信息，容器可以开放多个端口提供服务.
+            - containerPort: 8849               # 对外暴露 8848 端口
+              name: authsvrhttpport             # 该端口对应的名称为 blogsvrport，后续在 Service 中可以通过 blogsvrport 来替代 8848.
+            - containerPort: 18849
+              name: authsvrrpcport
+          livenessProbe:                        # 存活探针，如果存活探针失败，则 kubelet 会杀死容器，并根据重启策略来重启.
+            httpGet:                            # 存活探针类型，这里我选择的是 httpGet,同时还支持 exec、grpc、tcpSocket(如果目标端口打开, net.Dial(xxx) 成功，则认为存活)
+              path: /openxm/api/v1/auth/probe   # httpGet 存活探针路径
+              port: 8849                        # httpGet 存活探针端口
+            initialDelaySeconds: 10             # 延迟调用时机，为了避免容器启动时间过长，导致无限重启
+            periodSeconds: 120                  # 探针检测时间间隔
+          resources:                            # Pod 内应用服务容器资源限制
+            limits:                             # 资源最大限制
+              cpu: "0.1"                        # 指在说明容器可使用的CPU最大限度为0.2
+              memory: "50Mi"                    # 容器最大可使用内存为 70Mi
+            requests:                           # 指在说明容器在调度到某个Node上时需要的最小资源限制
+              cpu: "0.1"                        # 允许调度的最小CPU为0.1核
+              memory: "20Mi"                    # 允许调度的最小内存为40Mi

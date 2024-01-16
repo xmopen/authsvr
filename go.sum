@@ -255,8 +255,8 @@ github.com/ugorji/go/codec v1.2.11 h1:BMaWp1Bb6fHwEtbplGBGJ498wD+LKlNSl25MjdZY4d
 github.com/ugorji/go/codec v1.2.11/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
 github.com/xmopen/commonlib v0.0.9 h1:FlX1dlNhp2+VuFom4i2a5f2G2lpWw3Ao+RfztOdc2I8=
 github.com/xmopen/commonlib v0.0.9/go.mod h1:37cMb4TGTQwmgbe+pHCfL4DHrc2SDsW8pN69BMBwq4E=
-github.com/xmopen/golib v0.0.11 h1:SExiLAJlSmF0YFnWYi6Mj1IpO1mPWB0R5JItVE8BLTg=
-github.com/xmopen/golib v0.0.11/go.mod h1:uuNhk4+kUWJrbBkuuU3zd97y65ASRX47Ind2pc7ULwo=
+github.com/xmopen/golib v0.0.15 h1:A/1wsgYJGXki1OsajVzZxujN50doxVvbaK493+aeAxA=
+github.com/xmopen/golib v0.0.15/go.mod h1:uuNhk4+kUWJrbBkuuU3zd97y65ASRX47Ind2pc7ULwo=
 github.com/xmopen/gorpc v0.0.4 h1:hn6cJvcgUBypUfn5oCa1zye53gb7qxHEfeLiU9e3PMo=
 github.com/xmopen/gorpc v0.0.4/go.mod h1:gAtjZzerBn0rsqZ0q1T/D18H9Ws7ZEMS93wQLHagNxY=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

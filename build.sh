@@ -1,15 +1,23 @@
-# 停止容器
-docker stop authsvr
-# 删除容器
-docker rm authsvr
-# 删除镜像
-docker rmi authsvr:latest
+# 1、删除老的Deployment 对象和 minikube 缓存镜像
+kubectl delete deployment authsvr
+minikube cache delete openxm/authsvr:latest
 
-# 构建新的镜像
-docker build -t authsvr .
+# 2、 删除 minikube 内老的原始镜像
+eval $(minikube docker-env)
+# 强制删除 minikube 内对应的镜像，上层已经将缓存内的镜像也已删除掉
+docker rmi -f openxm/authsvr:latest
+eval $(minikube docker-env -u)
 
+# 3、重新打包二进制和镜像
 go mod tidy
 go build -o ./svrmain ./*.go
-# 限制内存为20M，CPU使用核数为0.1核
 
-docker run -d -p 8849:8849 -p 18849:18849 -e TZ=Asia/Shanghai --memory=20m --cpus=0.1 --oom-kill-disable=true --name authsvr -v /data/config:/data/config authsvr:latest
+# 4、删除宿主机镜像并重新构建
+docker rmi openxm/authsvr:latest
+docker build -t openxm/authsvr:latest .
+
+# 5、添加到 minikube 缓存内
+minikube cache add openxm/authsvr:latest
+
+# 6、创建 Deployment 对象
+kubectl apply -f ./authsvr_pod.yaml
